@@ -1,13 +1,81 @@
-import React from 'react';
-import { Stack, Text, Link, FontWeights } from 'office-ui-fabric-react';
-
+import React, { useState } from 'react';
+import { Stack, Text, Link, FontWeights, SearchBox, FocusZone, FocusZoneDirection, List,
+  ITheme, mergeStyleSets, getTheme, getFocusStyle, getRTL, Icon, initializeIcons } from 'office-ui-fabric-react';
+import { useConst } from '@uifabric/react-hooks';
+import { VerseItem, dbGetVerseListItems } from './VerseItem';
 import logo from './fabric.png';
 
 const boldStyle = {
   root: { fontWeight: FontWeights.semibold }
 };
 
+initializeIcons(/* optional base url */);
+
+const theme: ITheme = getTheme();
+const { palette, semanticColors, fonts } = theme;
+
+const classNames = mergeStyleSets({
+  itemCell: [
+    getFocusStyle(theme, { inset: -1 }),
+    {
+      minHeight: 54,
+      padding: 10,
+      boxSizing: 'border-box',
+      borderBottom: `1px solid ${semanticColors.bodyDivider}`,
+      display: 'flex',
+      selectors: {
+        '&:hover': { background: palette.neutralLight },
+      },
+    },
+  ],
+  itemImage: {
+    flexShrink: 0,
+  },
+  itemContent: {
+    marginLeft: 10,
+    overflow: 'hidden',
+    flexGrow: 1,
+  },
+  itemName: [
+    fonts.xLarge,
+    {
+      whiteSpace: 'nowrap',
+      overflow: 'hidden',
+      textOverflow: 'ellipsis',
+    },
+  ],
+  itemIndex: {
+    fontSize: fonts.small.fontSize,
+    color: palette.neutralTertiary,
+    marginBottom: 10,
+  },
+  chevron: {
+    alignSelf: 'center',
+    marginLeft: 10,
+    color: palette.neutralTertiary,
+    fontSize: fonts.large.fontSize,
+    flexShrink: 0,
+  },
+});
+
+
+const onRenderCell = (item?: VerseItem): JSX.Element => {
+  return (
+    <div className={classNames.itemCell} data-is-focusable={true}>
+      <div className={classNames.itemContent}>
+        <div className={classNames.itemName}>{item!.title} - {item!.reference}</div>
+        <div className={classNames.itemIndex}><Link href={item!.url}>{item!.url}</Link></div>
+        <div>{item!.content}</div>
+      </div>
+      <Icon className={classNames.chevron} iconName={getRTL() ? 'ChevronLeft' : 'ChevronRight'} />
+    </div>
+  );
+};
+
 export const App: React.FunctionComponent = () => {
+  const originalItems: VerseItem[] = useConst(() => dbGetVerseListItems('forty'));
+  const [items, setItems] = React.useState(originalItems);
+    
   return (
     <Stack
       horizontalAlign="center"
@@ -18,33 +86,19 @@ export const App: React.FunctionComponent = () => {
           width: '960px',
           margin: '0 auto',
           textAlign: 'center',
-          color: '#605e5c'
+          color: '#6200dc',
         }
       }}
       gap={15}
     >
-      <img src={logo} alt="logo" />
       <Text variant="xxLarge" styles={boldStyle}>
-        Welcome to Your UI Fabric App
+        Verse - Hoon Dok Hae
       </Text>
-      <Text variant="large">For a guide on how to customize this project, check out the UI Fabric documentation.</Text>
-      <Text variant="large" styles={boldStyle}>
-        Essential Links
-      </Text>
-      <Stack horizontal gap={15} horizontalAlign="center">
-        <Link href="https://developer.microsoft.com/en-us/fabric">Docs</Link>
-        <Link href="https://stackoverflow.com/questions/tagged/office-ui-fabric">Stack Overflow</Link>
-        <Link href="https://github.com/officeDev/office-ui-fabric-react/">Github</Link>
-        <Link href="https://twitter.com/officeuifabric">Twitter</Link>
-      </Stack>
-      <Text variant="large" styles={boldStyle}>
-        Design System
-      </Text>
-      <Stack horizontal gap={15} horizontalAlign="center">
-        <Link href="https://developer.microsoft.com/en-us/fabric#/styles/icons">Icons</Link>
-        <Link href="https://developer.microsoft.com/en-us/fabric#/styles/typography">Typography</Link>
-        <Link href="https://developer.microsoft.com/en-us/fabric#/styles/themegenerator">Theme</Link>
-      </Stack>
+      <Text variant="large">Search through the speeches and words of the Reverend Drs. Sun Myung Moon and Hak Ja Han Moon.</Text>
+      <SearchBox placeholder="Search" onSearch={newValue => dbGetVerseListItems(newValue)} />
+      <FocusZone direction={FocusZoneDirection.vertical}>
+        <List items={items} onRenderCell={onRenderCell} />
+      </FocusZone>
     </Stack>
   );
 };
