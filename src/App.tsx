@@ -1,12 +1,12 @@
 import React, { useState } from 'react';
 import { Stack, Text, Link, FontWeights, SearchBox, FocusZone, FocusZoneDirection, List,
-  ITheme, mergeStyleSets, getTheme, getFocusStyle, getRTL, Icon, initializeIcons } from 'office-ui-fabric-react';
-import { useConst } from '@uifabric/react-hooks';
-import { VerseItem, dbGetVerseListItems } from './VerseItem';
-import logo from './fabric.png';
+  ITheme, mergeStyleSets, getTheme, getFocusStyle, getRTL, Icon, initializeIcons, } from 'office-ui-fabric-react';
+import https from 'https';
+import { VerseItem } from './VerseItem';
 
 const boldStyle = {
-  root: { fontWeight: FontWeights.semibold }
+  root: { fontWeight: FontWeights.semibold,
+    color: '#6200dc',}
 };
 
 initializeIcons(/* optional base url */);
@@ -33,16 +33,18 @@ const classNames = mergeStyleSets({
   },
   itemContent: {
     marginLeft: 10,
-    overflow: 'hidden',
+    /*overflow: 'hidden',*/
     flexGrow: 1,
+    textAlign: 'left',
+    maxWidth: '360px',
   },
   itemName: [
     fonts.xLarge,
-    {
+    /*{
       whiteSpace: 'nowrap',
       overflow: 'hidden',
       textOverflow: 'ellipsis',
-    },
+    },*/
   ],
   itemIndex: {
     fontSize: fonts.small.fontSize,
@@ -73,20 +75,41 @@ const onRenderCell = (item?: VerseItem): JSX.Element => {
 };
 
 export const App: React.FunctionComponent = () => {
-  const originalItems: VerseItem[] = useConst(() => dbGetVerseListItems('forty'));
-  const [items, setItems] = React.useState(originalItems);
     
+  const [items, setItems] = React.useState();
+
+  const dbGetVerseListItems = (query?: string) => {
+
+    const req = https.request(
+        {hostname: 'chungwon.glass',
+        port: 8443,
+        path: `/query?q=${query}`,
+        method: 'GET'}, 
+        res => {
+            console.log(`statusCode: ${res.statusCode}`)
+            res.setEncoding('utf8');
+        
+            res.on('data', d => {
+                setItems(JSON.parse(d))
+            })
+        })
+        
+    req.on('error', error => {
+        console.error(error)
+    })
+    
+    req.end()
+  }
+
   return (
     <Stack
-      horizontalAlign="center"
-      verticalAlign="center"
       verticalFill
+      horizontalAlign = "center"
       styles={{
         root: {
-          width: '960px',
+          width: '90%',
           margin: '0 auto',
           textAlign: 'center',
-          color: '#6200dc',
         }
       }}
       gap={15}
@@ -94,8 +117,11 @@ export const App: React.FunctionComponent = () => {
       <Text variant="xxLarge" styles={boldStyle}>
         Verse - Hoon Dok Hae
       </Text>
-      <Text variant="large">Search through the speeches and words of the Reverend Drs. Sun Myung Moon and Hak Ja Han Moon.</Text>
-      <SearchBox placeholder="Search" onSearch={newValue => dbGetVerseListItems(newValue)} />
+      <Text variant="large" styles={{root: { color: '#6200dc'}}}>Search through the speeches and words of the Reverend Drs. Sun Myung Moon and Hak Ja Han Moon.</Text>
+      <SearchBox placeholder="Search" onSearch={newValue => dbGetVerseListItems(newValue)} styles={{
+        root: {
+          width: '30%',
+        }}}/>
       <FocusZone direction={FocusZoneDirection.vertical}>
         <List items={items} onRenderCell={onRenderCell} />
       </FocusZone>
