@@ -1,9 +1,11 @@
 import React, { useState } from 'react';
-import { Stack, Text, Link, FontWeights, SearchBox, FocusZone, FocusZoneDirection, List,
-  ITheme, mergeStyleSets, getTheme, getFocusStyle, getRTL, Icon, initializeIcons, } from 'office-ui-fabric-react';
+import { Stack, Link, FontWeights, SearchBox, FocusZone, FocusZoneDirection, List,
+  ITheme, mergeStyleSets, getTheme, getFocusStyle, getRTL, Icon, initializeIcons,
+  } from 'office-ui-fabric-react';
+import { TextField } from 'office-ui-fabric-react/lib/TextField';
+import { Text } from 'office-ui-fabric-react/lib/Text';
 import { DefaultButton, PrimaryButton } from 'office-ui-fabric-react/lib/Button';
 import { Panel } from 'office-ui-fabric-react/lib/Panel';
-import { TextField } from 'office-ui-fabric-react/lib/TextField';
 import { useConstCallback } from '@uifabric/react-hooks';
 import https from 'https';
 import { VerseItem } from './VerseItem';
@@ -62,6 +64,9 @@ const classNames = mergeStyleSets({
     fontSize: fonts.large.fontSize,
     flexShrink: 0,
   },
+  successBox: {
+    background:"green", color:"white", textAlign:"center"
+  },
 });
 
 
@@ -85,6 +90,13 @@ export const App: React.FunctionComponent = () => {
 
   const openPanel = useConstCallback(() => setIsOpen(true));
   const dismissPanel = useConstCallback(() => setIsOpen(false));  
+
+  const resetChoice = () => {
+    console.log();
+  };
+
+  const [successMessage, setSuccessMessage] = React.useState('Successfully added highlight');
+  const [successClass, setSuccessClass] = React.useState(false)
 
     // start highlight form state;   
     const [highlightUsername, setHighlightUsername] = React.useState();
@@ -113,44 +125,50 @@ export const App: React.FunctionComponent = () => {
     }
     const addHighlight = () => {
       // organize data from the highlight form
-      const data = JSON.stringify({
-          username: highlightUsername,
+      const data = {
+          user: highlightUsername,
           url: highlightUrl,
           startxpath: highlightStartXpath,
           starttext: highlightStartHighlight,
           endxpath: highlightEndXpath,
           endtext: highlightEndHighlight
-      });
+      };
+      console.log(data);
       // send POST request with data from the highlight form
       const req = https.request(
         {
-          hostname: 'chungwon.glass',
+          hostname: 'chungwon.glass', // PROD // 'localhost' // TEST
           port: 8443,
           path: `/highlight`,
           method: 'POST',
           headers: {
-            'Content-Type': 'application/json',
-            'Content-Length': data.length
+            'Content-Type': 'text/plain',
+            'Content-Length': 'JSON.stringify(data)'
           }
         }, 
         res => {
             console.log(`statusCode: ${res.statusCode}`)
             res.setEncoding('utf8');
-            let data = '';
+            // let data = '';
         
-            res.on('data', (chunk) => {
-              data += chunk;
-            });
+            // res.on('data', (chunk) => {
+            //   data += chunk;
+            //   console.log('Body: ', chunk);
+            // });
         
-            res.on('end', () => {
-                console.log('Body: ', JSON.parse(data));
-            });
+            //res.on('end', () => {
+                console.log('Finished POST request.');
+                setSuccessClass(true)
+                setTimeout(() => {
+                  setSuccessClass(false);
+                }, 6000);
+            //});
         }).on('error', error => {
           console.error(error)
       })
       
 
-      req.write(data);
+      req.write(JSON.stringify(data));
       req.end()
     }
     const setTodo = (e: any) =>{
@@ -193,7 +211,7 @@ export const App: React.FunctionComponent = () => {
           textAlign: 'center',
         }
       }}
-      gap={15}
+      tokens={{ childrenGap: 5 }}
     >
       <Text variant="xxLarge" styles={boldStyle}>
         Verse - Hoon Dok Hae
@@ -218,10 +236,10 @@ export const App: React.FunctionComponent = () => {
         // You MUST provide this prop! Otherwise screen readers will just say "button" with no label.
         closeButtonAriaLabel="Close"
       >
-        <Stack>
+        <Stack tokens={{ childrenGap: 10 }}>
           <TextField // prettier-ignore
             label="username"
-            ariaLabel="username text field, required"
+            aria-label="username text field, required"
             required
             value={highlightUsername}
             onChange={highlightUsernameState}
@@ -229,35 +247,46 @@ export const App: React.FunctionComponent = () => {
           <TextField // prettier-ignore
             label="url"
             placeholder="http://"
-            ariaLabel="url text field with http:// placeholder"
+            aria-label="url text field with http:// placeholder"
             value={highlightUrl}
             onChange={highlightUrlState}
           />
           <TextField // prettier-ignore
             label="XPath Highlight Start"
             placeholder="/html/"
-            ariaLabel="start xpath text field with /html/ placeholder"
+            aria-label="start xpath text field with /html/ placeholder"
             value={highlightStartXpath}
             onChange={highlightStartXpathState}
           />
           <TextField label="Text at Start of Highlight" multiline autoAdjustHeight 
-            ariaLabel="start of highlight text field, multiline auto adjust height"
+            aria-label="start of highlight text field, multiline auto adjust height"
             value={highlightStartHighlight}
             onChange={highlightStartHighlightState}
           />
           <TextField // prettier-ignore
             label="XPath Highlight End"
             placeholder="/html/"
-            ariaLabel="end xpath text field with /html/ placeholder"
+            aria-label="end xpath text field with /html/ placeholder"
             value={highlightEndXpath}
             onChange={highlightEndXpathState}
           />
           <TextField label="Text at End of Highlight" multiline autoAdjustHeight 
-            ariaLabel="end of highlight text field, multiline auto adjust height"
+            aria-label="end of highlight text field, multiline auto adjust height"
             value={highlightEndHighlight}
             onChange={highlightEndHighlightState}
           /> 
           <PrimaryButton onClick={addHighlight} >Save Highlight</PrimaryButton>
+          <div 
+          className = {classNames.successBox}
+            style={
+              successClass ? 
+              {opacity: 1, transition: "opacity 1s ease-in-out",} 
+              : 
+              {opacity: 0, transition: "opacity 1s ease-in-out",}
+            } 
+          >
+            {successMessage}
+          </div>
         </Stack>
       </Panel>
     </Stack>
