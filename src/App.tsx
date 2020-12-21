@@ -1,12 +1,8 @@
-import React, { useState } from 'react';
+import React from 'react';
 import { Stack, Link, FontWeights, SearchBox, FocusZone, FocusZoneDirection, List,
   ITheme, mergeStyleSets, getTheme, getFocusStyle, getRTL, Icon, initializeIcons,
-  } from 'office-ui-fabric-react';
-import { TextField } from 'office-ui-fabric-react/lib/TextField';
-import { Text } from 'office-ui-fabric-react/lib/Text';
-import { DefaultButton, PrimaryButton } from 'office-ui-fabric-react/lib/Button';
-import { Panel } from 'office-ui-fabric-react/lib/Panel';
-import { useConstCallback } from '@uifabric/react-hooks';
+  TextField,Text, DefaultButton, PrimaryButton, Panel, } from 'office-ui-fabric-react';
+import { useBoolean } from '@uifabric/react-hooks';
 import https from 'https';
 import { VerseItem } from './VerseItem';
 
@@ -70,7 +66,7 @@ const classNames = mergeStyleSets({
 });
 
 
-const onRenderCell = (item?: VerseItem): JSX.Element => {
+function onRenderCell(item?: VerseItem): JSX.Element {
   return (
     <div className={classNames.itemCell} data-is-focusable={true}>
       <div className={classNames.itemContent}>
@@ -81,129 +77,121 @@ const onRenderCell = (item?: VerseItem): JSX.Element => {
       <Icon className={classNames.chevron} iconName={getRTL() ? 'ChevronLeft' : 'ChevronRight'} />
     </div>
   );
-};
+}
 
-export const App: React.FunctionComponent = () => {
+export function App() {
   // start panel state
   const [items, setItems] = React.useState();
-  const [isOpen, setIsOpen] = React.useState(false);
 
-  const openPanel = useConstCallback(() => setIsOpen(true));
-  const dismissPanel = useConstCallback(() => setIsOpen(false));  
-
-  const resetChoice = () => {
-    console.log();
-  };
+  const [isOpen, { setTrue: openPanel, setFalse: dismissPanel }] = useBoolean(false);
 
   const [successMessage, setSuccessMessage] = React.useState('Successfully added highlight');
-  const [successClass, setSuccessClass] = React.useState(false)
+  const [successClass, setSuccessClass] = React.useState(false);
 
-    // start highlight form state;   
-    const [highlightUsername, setHighlightUsername] = React.useState();
-    const [highlightUrl, setHighlightUrl] = React.useState();
-    const [highlightStartXpath, setHighlightStartXpath] = React.useState()
-    const [highlightStartHighlight, setHighlightStartHighlight] = React.useState()
-    const [highlightEndXpath, setHighlightEndXpath] = React.useState()
-    const [highlightEndHighlight, setHighlightEndHighlight] = React.useState()
-    const highlightUsernameState = (e: any) => {
-      setHighlightUsername(e.target.value);
-    }
-    const highlightUrlState = (e: any) => {
-      setHighlightUrl(e.target.value);
-    }
-    const highlightStartXpathState = (e: any) => {
-      setHighlightStartXpath(e.target.value);
-    }
-    const highlightStartHighlightState = (e: any) => {
-      setHighlightStartHighlight(e.target.value);
-    }
-    const highlightEndXpathState = (e: any) => {
-      setHighlightEndXpath(e.target.value);
-    }
-    const highlightEndHighlightState = (e: any) => {
-      setHighlightEndHighlight(e.target.value);
-    }
-    const addHighlight = () => {
-      // organize data from the highlight form
-      const data = {
-          user: highlightUsername,
-          url: highlightUrl,
-          startxpath: highlightStartXpath,
-          starttext: highlightStartHighlight,
-          endxpath: highlightEndXpath,
-          endtext: highlightEndHighlight
-      };
-      console.log(data);
-      // send POST request with data from the highlight form
-      const req = https.request(
-        {
-          hostname: 'chungwon.glass', // PROD // 'localhost' // TEST
-          port: 8443,
-          path: `/highlight`,
-          method: 'POST',
-          headers: {
-            'Content-Type': 'text/plain',
-            'Content-Length': 'JSON.stringify(data)'
-          }
-        }, 
-        res => {
-            console.log(`statusCode: ${res.statusCode}`)
-            res.setEncoding('utf8');
-            // let data = '';
-        
-            // res.on('data', (chunk) => {
-            //   data += chunk;
-            //   console.log('Body: ', chunk);
-            // });
-        
-            //res.on('end', () => {
-                console.log('Finished POST request.');
-                setSuccessClass(true)
-                setTimeout(() => {
-                  setSuccessClass(false);
-                }, 6000);
-            //});
-        }).on('error', error => {
-          console.error(error)
-      })
-      
+  // start highlight form state;   
+  const [highlightUsername, setHighlightUsername] = React.useState();
+  const [highlightUrl, setHighlightUrl] = React.useState();
+  const [highlightStartXpath, setHighlightStartXpath] = React.useState();
+  const [highlightStartHighlight, setHighlightStartHighlight] = React.useState();
+  const [highlightEndXpath, setHighlightEndXpath] = React.useState();
+  const [highlightEndHighlight, setHighlightEndHighlight] = React.useState();
+  function highlightUsernameState(e: any) {
+    setHighlightUsername(e.target.value);
+  }
+  function highlightUrlState(e: any) {
+    setHighlightUrl(e.target.value);
+  }
+  function highlightStartXpathState(e: any) {
+    setHighlightStartXpath(e.target.value);
+  }
+  function highlightStartHighlightState(e: any) {
+    setHighlightStartHighlight(e.target.value);
+  }
+  function highlightEndXpathState(e: any) {
+    setHighlightEndXpath(e.target.value);
+  }
+  function highlightEndHighlightState(e: any) {
+    setHighlightEndHighlight(e.target.value);
+  }
+  function addHighlight() {
+    // organize data from the highlight form
+    const data = {
+      user: highlightUsername,
+      url: highlightUrl,
+      startxpath: highlightStartXpath,
+      starttext: highlightStartHighlight,
+      endxpath: highlightEndXpath,
+      endtext: highlightEndHighlight
+    };
+    console.log(data);
+    // send POST request with data from the highlight form
+    const req = https.request(
+      {
+        hostname: 'chungwon.glass',
+        port: 8443,
+        path: `/highlight`,
+        method: 'POST',
+        headers: {
+          'Content-Type': 'text/plain',
+          'Content-Length': 'JSON.stringify(data)'
+        }
+      },
+      res => {
+        console.log(`statusCode: ${res.statusCode}`);
+        res.setEncoding('utf8');
+        // let data = '';
+        // res.on('data', (chunk) => {
+        //   data += chunk;
+        //   console.log('Body: ', chunk);
+        // });
+        //res.on('end', () => {
+        console.log('Finished POST request.');
+        setSuccessClass(true);
+        setTimeout(() => {
+          setSuccessClass(false);
+        }, 6000);
+        //});
+      }).on('error', error => {
+        console.error(error);
+      });
 
-      req.write(JSON.stringify(data));
-      req.end()
-    }
-    const setTodo = (e: any) =>{
-        setTodo(e.target.value);
-    }
-    // end highlight form state
+
+    req.write(JSON.stringify(data));
+    req.end();
+  }
+  // end highlight form state
   // end panel state
-
-  const dbGetVerseListItems = (query?: string) => {
+  function dbGetVerseListItems(query: string) {
+    const queryenc = encodeURIComponent(query);
+    console.debug(queryenc);
 
     const req = https.request(
-        {hostname: 'chungwon.glass',
+      {
+        hostname: 'chungwon.glass',
         port: 8443,
-        path: `/query?q=${query}`,
-        method: 'GET'}, 
-        res => {
-            console.log(`statusCode: ${res.statusCode}`)
-            res.setEncoding('utf8');
-        
-            res.on('data', d => {
-                setItems(JSON.parse(d))
-            })
-        })
-        
+        path: `/query?q=${queryenc}`,
+        method: 'GET'
+      },
+      function (res) {
+        console.log(`statusCode: ${res.statusCode}`);
+        res.setEncoding('utf8');
+
+        res.on('data', d => {
+          setItems(JSON.parse(d));
+        });
+      });
+
     req.on('error', error => {
-        console.error(error)
-    })
-    
-    req.end()
+      console.error(error);
+    });
+
+    req.end();
   }
 
   return (
     <Stack
       verticalFill
-      horizontalAlign = "center"
+      horizontalAlign="center"
       styles={{
         root: {
           width: '90%',
@@ -216,11 +204,12 @@ export const App: React.FunctionComponent = () => {
       <Text variant="xxLarge" styles={boldStyle}>
         Verse - Hoon Dok Hae
       </Text>
-      <Text variant="large" styles={{root: { color: '#6200dc'}}}>Search through the speeches and words of the Reverend Drs. Sun Myung Moon and Hak Ja Han Moon.</Text>
-      <SearchBox placeholder="Search" onSearch={newValue => dbGetVerseListItems(newValue)} styles={{
+      <Text variant="large" styles={{ root: { color: '#6200dc' } }}>Search through the speeches and words of the Reverend Drs. Sun Myung Moon and Hak Ja Han Moon.</Text>
+      <SearchBox placeholder="Search" onSearch={(newValue: string) => dbGetVerseListItems(newValue)} styles={{
         root: {
           width: '30%',
-        }}}/>
+        }
+      }} />
       <DefaultButton text="Create Highlight" onClick={openPanel} />
       <FocusZone direction={FocusZoneDirection.vertical}>
         <List items={items} onRenderCell={onRenderCell} />
@@ -238,52 +227,48 @@ export const App: React.FunctionComponent = () => {
       >
         <Stack tokens={{ childrenGap: 10 }}>
           <TextField // prettier-ignore
+
             label="username"
             aria-label="username text field, required"
             required
             value={highlightUsername}
-            onChange={highlightUsernameState}
-          />
+            onChange={highlightUsernameState} />
           <TextField // prettier-ignore
+
             label="url"
             placeholder="http://"
             aria-label="url text field with http:// placeholder"
             value={highlightUrl}
-            onChange={highlightUrlState}
-          />
+            onChange={highlightUrlState} />
           <TextField // prettier-ignore
+
             label="XPath Highlight Start"
             placeholder="/html/"
             aria-label="start xpath text field with /html/ placeholder"
             value={highlightStartXpath}
-            onChange={highlightStartXpathState}
-          />
-          <TextField label="Text at Start of Highlight" multiline autoAdjustHeight 
+            onChange={highlightStartXpathState} />
+          <TextField label="Text at Start of Highlight" multiline autoAdjustHeight
             aria-label="start of highlight text field, multiline auto adjust height"
             value={highlightStartHighlight}
-            onChange={highlightStartHighlightState}
-          />
+            onChange={highlightStartHighlightState} />
           <TextField // prettier-ignore
+
             label="XPath Highlight End"
             placeholder="/html/"
             aria-label="end xpath text field with /html/ placeholder"
             value={highlightEndXpath}
-            onChange={highlightEndXpathState}
-          />
-          <TextField label="Text at End of Highlight" multiline autoAdjustHeight 
+            onChange={highlightEndXpathState} />
+          <TextField label="Text at End of Highlight" multiline autoAdjustHeight
             aria-label="end of highlight text field, multiline auto adjust height"
             value={highlightEndHighlight}
-            onChange={highlightEndHighlightState}
-          /> 
-          <PrimaryButton onClick={addHighlight} >Save Highlight</PrimaryButton>
-          <div 
-          className = {classNames.successBox}
-            style={
-              successClass ? 
-              {opacity: 1, transition: "opacity 1s ease-in-out",} 
-              : 
-              {opacity: 0, transition: "opacity 1s ease-in-out",}
-            } 
+            onChange={highlightEndHighlightState} />
+          <PrimaryButton onClick={addHighlight}>Save Highlight</PrimaryButton>
+          <div
+            className={classNames.successBox}
+            style={successClass ?
+              { opacity: 1, transition: "opacity 1s ease-in-out", }
+              :
+              { opacity: 0, transition: "opacity 1s ease-in-out", }}
           >
             {successMessage}
           </div>
@@ -291,4 +276,4 @@ export const App: React.FunctionComponent = () => {
       </Panel>
     </Stack>
   );
-};
+}
