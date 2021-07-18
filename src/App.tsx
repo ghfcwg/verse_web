@@ -1,15 +1,23 @@
 import React from 'react';
-import { Stack, Link, FontWeights, SearchBox, FocusZone, FocusZoneDirection, List,
-  ITheme, mergeStyleSets, getTheme, getFocusStyle, getRTL, Icon, initializeIcons,
-  TextField,Text, DefaultButton, PrimaryButton, Panel, } from 'office-ui-fabric-react';
-import { useBoolean } from '@uifabric/react-hooks';
+import { Stack, Text, Link, FontWeights, ITextStyles, SearchBox, FocusZone, FocusZoneDirection, List,
+  ITheme, mergeStyleSets, getTheme, getFocusStyle, getRTL, Icon,
+  TextField, DefaultButton, PrimaryButton, Panel, } from '@fluentui/react';
+import { initializeIcons } from '@fluentui/react/lib/Icons';
+import { useBoolean } from '@fluentui/react-hooks';
 import https from 'https';
-import { VerseItem } from './VerseItem';
 
-const boldStyle = {
-  root: { fontWeight: FontWeights.semibold,
-    color: '#6200dc',}
-};
+
+import './App.css';
+export interface VerseItem {
+    id: string;
+    content: string;
+    title: string;
+    reference: string;
+    url: string;
+    rating: number;
+}
+
+const boldStyle: Partial<ITextStyles> = { root: { fontWeight: FontWeights.semibold, color: '#6200dc', } };
 
 initializeIcons(/* optional base url */);
 
@@ -79,22 +87,19 @@ function onRenderCell(item?: VerseItem): JSX.Element {
   );
 }
 
-export function App() {
+export const App: React.FunctionComponent = () => {
   // start panel state
   const [items, setItems] = React.useState();
 
   const [isOpen, { setTrue: openPanel, setFalse: dismissPanel }] = useBoolean(false);
 
-  const [successMessage, setSuccessMessage] = React.useState('Successfully added highlight');
+  const [successMessage/*, setSuccessMessage*/] = React.useState('Successfully added highlight');
   const [successClass, setSuccessClass] = React.useState(false);
 
   // start highlight form state;   
-  const [highlightUsername, setHighlightUsername] = React.useState();
-  const [highlightUrl, setHighlightUrl] = React.useState();
-  const [highlightStartXpath, setHighlightStartXpath] = React.useState();
-  const [highlightStartHighlight, setHighlightStartHighlight] = React.useState();
-  const [highlightEndXpath, setHighlightEndXpath] = React.useState();
-  const [highlightEndHighlight, setHighlightEndHighlight] = React.useState();
+  const [highlightUsername, setHighlightUsername] = React.useState(), [highlightUrl, setHighlightUrl] = React.useState();
+  const [highlightStartXpath, setHighlightStartXpath] = React.useState(), [highlightStartHighlight, setHighlightStartHighlight] = React.useState();
+  const [highlightEndXpath, setHighlightEndXpath] = React.useState(), [highlightEndHighlight, setHighlightEndHighlight] = React.useState();
   function highlightUsernameState(e: any) {
     setHighlightUsername(e.target.value);
   }
@@ -204,10 +209,10 @@ export function App() {
       <Text variant="xxLarge" styles={boldStyle}>
         Verse - Hoon Dok Hae
       </Text>
-      <Text variant="large" styles={{ root: { color: '#6200dc' } }}>Search through the speeches and words of the Reverend Drs. Sun Myung Moon and Hak Ja Han Moon.</Text>
+      <Text variant="large" styles={{ root: { color: '#6200dc' } }}>Search speeches and texts of Father and Mother Moon.</Text>
       <SearchBox placeholder="Search" onSearch={(newValue: string) => dbGetVerseListItems(newValue)} styles={{
         root: {
-          width: '30%',
+          //width: '30%',
         }
       }} />
       <DefaultButton text="Create Highlight" onClick={openPanel} />
@@ -276,4 +281,4 @@ export function App() {
       </Panel>
     </Stack>
   );
-}
+};
